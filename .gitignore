@@ -1,4 +1,6 @@
+# ---------------------
 # Logs
+# ---------------------
 logs
 *.log
 npm-debug.log*
@@ -7,18 +9,66 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# ---------------------
+# Dependency directories
+# ---------------------
+node_modules/
+
+# ---------------------
+# Build output
+# ---------------------
+dist/
+dist-ssr/
+build/
+
+# ---------------------
+# Vite local config
+# ---------------------
 *.local
 
+# ---------------------
+# Environment variables
+# ---------------------
+.env
+.env.*
+!.env.example
+
+# ---------------------
 # Editor directories and files
+# ---------------------
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# ---------------------
+# OS specific files
+# ---------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------------------
+# Typescript
+# ---------------------
+*.tsbuildinfo
+
+# ---------------------
+# Optional npm cache
+# ---------------------
+.npm/
+.pnpm-store/
+.yarn/
+
+# ---------------------
+# Temporary files
+# ---------------------
+*.tmp
+*.temp
+*.cache
+.cache/
