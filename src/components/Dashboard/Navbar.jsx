@@ -1,69 +1,162 @@
-import { Bell, Search } from 'lucide-react';
 import { useState } from 'react';
-import UserFormModal from './ProfileUpdate.jsx';
-import { useFirebase } from '../../context/Firebase.jsx';
-const Navbar = ({ searchQuery, setSearchQuery }) => {
-  const firebase = useFirebase();
-  const updatedProfile = firebase.userProfile;
-  const currentLoggedInUser = firebase.loggedInUser
-  // console.log("updatedProfile : ",updatedProfile)
-  // console.log("navbar loggedinuser updatedProfile : ",currentLoggedInUser)
-    const [profile,setProfile] = useState(false)
-    const openProfileUpdate = () => {
-        setProfile(true);
-    }
+import { Menu, Bell, Search, X, BookOpen, ChevronDown } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
+import ProfileModal from './ProfileModal.jsx';
 
-     if(profile){
-    return <UserFormModal onClose={() => setProfile(false)}/>
-  }
+const DashboardNavbar = ({ onMenuToggle, searchQuery, setSearchQuery, userProfile }) => {
+  const { user } = useAuth();
+  const [profileOpen,  setProfileOpen]  = useState(false);
+  const [mobileSearch, setMobileSearch] = useState(false);
+
+  const displayName =
+    userProfile?.name || user?.displayName || user?.email?.split('@')[0] || 'User';
+  const avatarUrl = userProfile?.profile_url || user?.photoURL;
+  const initials  = displayName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <nav className="bg-white/80 backdrop-blur-xl border-b border-white/20 px-4 lg:px-6 py-4 sticky top-0 z-50">
-      <div className="flex items-center justify-between">
-        {/* Left Section */}
-        <div className="flex items-center space-x-3">
-          <div className="relative cursor-pointer"
-          onClick={openProfileUpdate}
-          >
-            <img
-              src={updatedProfile?updatedProfile.profile_url : currentLoggedInUser.photoURL}
-              alt="Profile"
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500"
-            />
-            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></div>
+    <>
+      <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-8 bg-[var(--bg-elevated)] border-b border-[var(--border-light)] shadow-[var(--shadow-sm)]">
+
+        {/* ── Hamburger (mobile/tablet) ── */}
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden flex items-center justify-center w-9 h-9 rounded-xl text-[var(--ink-secondary)] hover:bg-[var(--bg-surface)] transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+
+        {/* ── Brand (mobile only, hidden when search open) ── */}
+        {!mobileSearch && (
+          <div className="flex lg:hidden items-center gap-1.5 shrink-0">
+            <BookOpen size={18} className="text-[var(--accent)]" />
+            <span
+              className="font-bold text-base text-[var(--ink-primary)]"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              Bookify
+            </span>
           </div>
-          <div>
-            <span className="text-gray-900 font-bold text-base">{updatedProfile ? (updatedProfile.name ? updatedProfile.name : currentLoggedInUser.displayName) : currentLoggedInUser.displayName}</span>
-            <p className="text-gray-500 text-sm font-medium">Admin</p>
-          </div>
-        </div>
-        {/* Right Section */}
-        <div className="flex items-center space-x-3">
-          {/* Search */}
-          <div className="relative hidden md:block w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        )}
+
+        {/* ── Desktop Search Bar ── */}
+        <div className="hidden sm:flex flex-1 max-w-sm">
+          <div className="flex items-center w-full h-9 gap-2 px-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] focus-within:border-[var(--accent)] transition-colors">
+            <Search size={14} className="text-[var(--ink-muted)] shrink-0" />
             <input
               type="text"
-              placeholder="Search books..."
+              placeholder="Search my books…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-4 py-3 bg-gray-100 border-0 rounded-xl text-sm font-semibold
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 
-                         focus:bg-white transition-all duration-200 w-full text-gray-800 placeholder-gray-500"
+              className="flex-1 min-w-0 bg-transparent text-sm outline-none text-[var(--ink-primary)] placeholder:text-[var(--ink-muted)]"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="flex items-center justify-center w-4 h-4 rounded-full bg-[var(--border)] text-[var(--ink-muted)] hover:bg-[var(--ink-muted)] hover:text-white transition-colors shrink-0"
+              >
+                <X size={10} />
+              </button>
+            )}
           </div>
+        </div>
 
-          {/* Notifications */}
-          <button className="relative p-2.5 text-gray-600 hover:text-gray-800 hover:bg-black/5 rounded-xl">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-              3
-            </span>
+        {/* ── Mobile Full-Width Search Overlay ── */}
+        {mobileSearch && (
+          <div className="absolute inset-0 z-40 flex items-center gap-3 px-4 bg-[var(--bg-elevated)] sm:hidden">
+            <div className="flex items-center flex-1 h-9 gap-2 px-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--accent)]">
+              <Search size={14} className="text-[var(--ink-muted)] shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search my books…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 min-w-0 bg-transparent text-sm outline-none text-[var(--ink-primary)] placeholder:text-[var(--ink-muted)]"
+              />
+            </div>
+            <button
+              onClick={() => { setMobileSearch(false); setSearchQuery(''); }}
+              className="flex items-center justify-center w-9 h-9 rounded-xl text-[var(--ink-secondary)] hover:bg-[var(--bg-surface)] transition-colors shrink-0"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
+        {/* ── Push right actions to end ── */}
+        <div className="flex-1" />
+
+        {/* ── Right Actions ── */}
+        <div className="flex items-center gap-1.5">
+
+          {/* Mobile search icon */}
+          {!mobileSearch && (
+            <button
+              onClick={() => setMobileSearch(true)}
+              className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl text-[var(--ink-secondary)] hover:bg-[var(--bg-surface)] transition-colors"
+              aria-label="Search"
+            >
+              <Search size={18} />
+            </button>
+          )}
+
+          {/* Notification Bell */}
+          <button
+            className="relative flex items-center justify-center w-9 h-9 rounded-xl text-[var(--ink-secondary)] hover:bg-[var(--bg-surface)] transition-colors"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <Bell size={17} />
+            {/* unread dot */}
+            <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[var(--accent)] ring-2 ring-[var(--bg-elevated)]" />
+          </button>
+
+          {/* Vertical divider */}
+          <div className="w-px h-5 bg-[var(--border)] mx-1 shrink-0" />
+
+          {/* Profile Button */}
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-all duration-200 group"
+            title="Edit profile"
+          >
+            {/* Avatar */}
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-7 h-7 rounded-full object-cover shrink-0 ring-2 ring-[var(--border)] group-hover:ring-[var(--accent-light)] transition-all"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-[var(--accent)] text-white text-xs font-bold flex items-center justify-center shrink-0 tracking-wide">
+                {initials}
+              </div>
+            )}
+
+            {/* Name + subtitle (md+) */}
+            <div className="hidden md:flex flex-col items-start leading-none gap-0.5">
+              <span className="text-xs font-semibold text-[var(--ink-primary)] max-w-[110px] truncate leading-tight">
+                {displayName}
+              </span>
+              <span className="text-[11px] text-[var(--ink-muted)] leading-tight">
+                View profile
+              </span>
+            </div>
+
+            <ChevronDown
+              size={13}
+              className="hidden md:block text-[var(--ink-muted)] shrink-0 group-hover:text-[var(--accent)] transition-colors"
+            />
           </button>
         </div>
-      </div>
-    </nav>
+      </header>
+
+      {profileOpen && (
+        <ProfileModal onClose={() => setProfileOpen(false)} userProfile={userProfile} />
+      )}
+    </>
   );
 };
 
-export default Navbar;
+export default DashboardNavbar;

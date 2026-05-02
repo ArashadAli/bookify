@@ -1,87 +1,106 @@
-import { Plus, LogOut,HouseIcon,Bell,BaggageClaim } from 'lucide-react';
-import { useFirebase } from '../../context/Firebase.jsx';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { BookOpen, Plus, ShoppingCart, Package, Home, LogOut } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useCart } from '../../context/CartContext.jsx';
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
-    const firebase = useFirebase();
-    const navigate = useNavigate();
-    const handleLogout = async() => {
-      await firebase.logoutUser();
-      window.location.replace("/")
-      // navigate("/")
-    }
-    const AddBook = () => {
-      if(firebase.isLoggedIn){
-        navigate("/dashboard/addbook")
-      }
-    }
-const navigateToCart = () => {
-  if (firebase.loggedInUser && firebase.isLoggedIn) {
-    navigate("/dashboard/cart");
-  } else {
-    alert("Please log in to view your cart.");
-    navigate("/");
-  }
-};
+const navItems = [
+  { label: 'Home',       to: '/',          icon: Home,         exact: true },
+  { label: 'My Books',   to: '/dashboard', icon: BookOpen,     exact: true },
+  { label: 'My Cart',    to: '/cart',      icon: ShoppingCart              },
+  { label: 'My Orders',  to: '/orders',    icon: Package                   },
+];
+
+const DashboardSidebar = ({ isOpen, onClose }) => {
+  const { logout }   = useAuth();
+  const { cartCount } = useCart();
+  const location     = useLocation();
+  const navigate     = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const isActive = (item) =>
+    item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to);
 
   return (
     <>
+      {/* Overlay (mobile) */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
       <aside
-        className={`${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 
-           bg-white/80 backdrop-blur-xl border-r border-white/20 
-           transition-all duration-300 ease-out`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 flex flex-col h-full transition-transform duration-300
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        style={{
+          background: 'var(--bg-elevated)',
+          borderRight: '1px solid var(--border)',
+        }}
       >
-        <div className="p-6 space-y-6">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">
+        {/* Brand */}
+        <div
+          className="flex items-center gap-2 px-6 h-16 shrink-0"
+          style={{ borderBottom: '1px solid var(--border-light)' }}
+        >
+          <BookOpen size={20} style={{ color: 'var(--accent)' }} />
+          <span
+            className="text-lg font-bold"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--ink-primary)' }}
+          >
             Bookify
-          </h2>
+          </span>
+        </div>
 
-          {/* Menu */}
-            <button className="w-full flex items-center space-x-3 px-4 py-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl"
-            onClick={() => navigate("/")}
-            >
-            <HouseIcon className="h-5 w-5" />
-            <span>Go To Home</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl"
-          onClick={AddBook}
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Book</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-black/5 rounded-xl"
-          onClick={navigateToCart}
-          >
-            <BaggageClaim className="h-5 w-5" />
-            <span>My Cart</span>
-          </button>
-          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-black/5 rounded-xl">
-            <Bell className="h-5 w-5" />
-            <span>Notifications</span>
-          </button>
+        {/* Nav */}
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          {navItems.map((item) => {
+            const active = isActive(item);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={onClose}
+                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium no-underline transition-all duration-200"
+                style={
+                  active
+                    ? { background: 'var(--accent-subtle)', color: 'var(--accent)' }
+                    : { color: 'var(--ink-secondary)' }
+                }
+              >
+                <item.icon size={17} />
+                {item.label}
+                {item.icon === ShoppingCart && cartCount > 0 && (
+                  <span
+                    className="ml-auto w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
+                    style={{ background: 'var(--accent)' }}
+                  >
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-          <div className="border-t border-gray-200 pt-4">
-            <button className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl"
+        {/* Logout */}
+        <div className="px-4 pb-6 shrink-0">
+          <button
             onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
-          </div>
+            className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-red-50"
+            style={{ color: 'var(--error)' }}
+          >
+            <LogOut size={17} />
+            Sign Out
+          </button>
         </div>
       </aside>
-
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
-          onClick={toggleSidebar}
-        ></div>
-      )}
     </>
   );
 };
 
-export default Sidebar;
+export default DashboardSidebar;
