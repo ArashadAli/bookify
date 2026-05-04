@@ -7,12 +7,12 @@ import { CATEGORIES } from '../../hooks/useBooks.js';
 
 const HomeNavbar = ({ searchQuery, setSearchQuery, category, setCategory }) => {
   const { isLoggedIn, user, logout } = useAuth();
-  const { cartCount }                = useCart();
-  const navigate                     = useNavigate();
+  const { cartCount } = useCart();
+  const navigate = useNavigate();
 
-  const [mobileOpen,    setMobileOpen]    = useState(false);
-  const [scrolled,      setScrolled]      = useState(false);
-  const [userMenuOpen,  setUserMenuOpen]  = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const userMenuRef = useRef(null);
 
@@ -38,15 +38,14 @@ const HomeNavbar = ({ searchQuery, setSearchQuery, category, setCategory }) => {
   };
 
   const firstName = user?.displayName?.split(' ')[0] || 'Account';
-  const initials  = (user?.displayName || 'U').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  const initials = (user?.displayName || 'U').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-[var(--bg-elevated)]/95 backdrop-blur-md border-b border-[var(--border)] shadow-[var(--shadow-sm)]'
-          : 'bg-[var(--bg-base)] border-b border-transparent'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+        ? 'bg-[var(--bg-elevated)]/95 backdrop-blur-md border-b border-[var(--border)] shadow-[var(--shadow-sm)]'
+        : 'bg-[var(--bg-base)] border-b border-transparent'
+        }`}
     >
       {/* ── Top bar ── */}
       <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 h-16 flex items-center gap-4">
@@ -66,9 +65,8 @@ const HomeNavbar = ({ searchQuery, setSearchQuery, category, setCategory }) => {
 
         {/* Search */}
         <div className="hidden md:flex flex-1 mx-6 lg:mx-10">
-          <div className={`flex items-center w-full h-10 gap-2 px-4 rounded-xl bg-[var(--bg-surface)] border transition-colors duration-200 ${
-            searchFocused ? 'border-[var(--accent)]' : 'border-[var(--border)]'
-          }`}>
+          <div className={`flex items-center w-full h-10 gap-2 px-4 rounded-xl bg-[var(--bg-surface)] border transition-colors duration-200 ${searchFocused ? 'border-[var(--accent)]' : 'border-[var(--border)]'
+            }`}>
             <Search size={15} className="text-[var(--ink-muted)] shrink-0" />
             <input
               type="text"
@@ -233,27 +231,53 @@ const HomeNavbar = ({ searchQuery, setSearchQuery, category, setCategory }) => {
           </button>
         </div>
       </div>
-
-      {/* ── Category bar (desktop) ── */}
-      <div className="hidden md:block border-t border-[var(--border-light)]">
-        <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 h-11 flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
+      {/* ── Category Bar ── */}
+      <div className="hidden md:block" style={{ borderTop: '1px solid #E8DFD0' }}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center gap-1 overflow-x-auto"
+          style={{ height: 48 }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap ${
-                category === cat
-                  ? 'text-white shadow-sm'
-                  : 'text-[var(--ink-muted)] hover:text-[var(--ink-primary)] hover:bg-[var(--bg-surface)]'
-              }`}
-              style={category === cat ? { background: 'var(--accent)' } : {}}
+              className="shrink-0 whitespace-nowrap transition-all duration-150 cursor-pointer"
+              style={{
+                padding: '6px 16px',
+                borderRadius: 99,
+                fontSize: 13,
+                fontWeight: category === cat ? 700 : 500,
+                border: category === cat
+                  ? '1.5px solid #92400E'
+                  : '1.5px solid #D6C8B4',
+                background: category === cat
+                  ? '#92400E'
+                  : 'transparent',
+                color: category === cat
+                  ? '#FFFFFF'
+                  : '#78604A',
+                boxShadow: category === cat
+                  ? '0 2px 8px rgba(146,64,14,0.25)'
+                  : 'none',
+              }}
+              onMouseEnter={e => {
+                if (category !== cat) {
+                  e.currentTarget.style.background = '#FEF3C7';
+                  e.currentTarget.style.borderColor = '#D97706';
+                  e.currentTarget.style.color = '#92400E';
+                }
+              }}
+              onMouseLeave={e => {
+                if (category !== cat) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = '#D6C8B4';
+                  e.currentTarget.style.color = '#78604A';
+                }
+              }}
             >
               {cat}
             </button>
           ))}
         </div>
       </div>
-
       {/* ── Mobile Menu ── */}
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--border)] bg-[var(--bg-elevated)] animate-fade-up">
@@ -277,11 +301,10 @@ const HomeNavbar = ({ searchQuery, setSearchQuery, category, setCategory }) => {
               <button
                 key={cat}
                 onClick={() => { setCategory(cat); setMobileOpen(false); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  category === cat
-                    ? 'text-white'
-                    : 'bg-[var(--bg-surface)] text-[var(--ink-muted)] border border-[var(--border)]'
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${category === cat
+                  ? 'text-white'
+                  : 'bg-[var(--bg-surface)] text-[var(--ink-muted)] border border-[var(--border)]'
+                  }`}
                 style={category === cat ? { background: 'var(--accent)' } : {}}
               >
                 {cat}
